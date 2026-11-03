@@ -629,14 +629,12 @@
       <h2 id="feedbackTitle">Ваш отзыв</h2>
       <p>Будем рады узнать, что вы думаете о нашей работе.</p>
 
-      <form class="feedback-form" id="feedbackForm" method="POST" action="https://formsubmit.co/Lexapolonevich98@gmail.com" novalidate>
-            <input type="hidden" name="_subject" value="Отзыв с сайта">
-            <input type="hidden" name="_captcha" value="false">
-            <input type="hidden" name="_template" value="table">
+      <form class="feedback-form" id="feedbackForm" novalidate>
         <input class="hp" name="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">
         <input class="feedback-field" name="name" type="text" placeholder="Ваше имя" aria-label="Ваше имя" autocomplete="name" maxlength="100" required>
         <textarea class="feedback-field" name="review" placeholder="Напишите отзыв" aria-label="Текст отзыва" maxlength="2000" required></textarea>
         <button class="feedback-send" id="feedbackSend" type="submit">Отправить отзыв ↗</button>
+        <a class="button button-outline" href="https://t.me/Tttttttttttttttttteest_bot" target="_blank" rel="noopener noreferrer" style="min-height:44px">Открыть бота в Telegram ↗</a>
         <div class="feedback-status" id="feedbackStatus" aria-live="polite"></div>
       </form>
     </div>
@@ -645,7 +643,27 @@
   <script>
     const OWNER_EMAIL = "Lexapolonevich98@gmail.com";
 
-    // Отправка письма на почту владельца (сервис FormSubmit).
+    // Telegram-бот для получения отзывов
+    const TG_TOKEN = "8989289234:AAGAe6zQAMiq9JU0ijjbSK3VfdFFaEJF6cM";
+    const TG_CHAT_ID = "ВСТАВЬТЕ_СВОЙ_CHAT_ID"; // числовой ID из getUpdates
+
+    // Отправка сообщения в Telegram-бота. Возвращает { ok, msg? }.
+    async function sendToTelegram(text) {
+      try {
+        const res = await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ chat_id: TG_CHAT_ID, text })
+        });
+        const json = await res.json().catch(() => ({}));
+        if (res.ok && json.ok) return { ok: true };
+        return { ok: false, msg: json.description || ("Ошибка " + res.status + ".") };
+      } catch (err) {
+        return { ok: false, msg: "Нет соединения. Проверьте интернет." };
+      }
+    }
+
+    // Отправка письма на почту владельца (сервис FormSubmit) — используется для заявок.
     // Возвращает { ok, uncertain?, msg? }.
     async function sendToOwner(subject, fields) {
       const payload = { _subject: subject, _captcha: "false", _template: "table", ...fields };
@@ -734,7 +752,7 @@
       });
     });
 
-    // Заявка
+    // Заявка (уходит на почту)
     const contactForm = document.getElementById("contactForm");
     const contactSend = document.getElementById("contactSend");
     const formStatus = document.getElementById("formStatus");
@@ -771,7 +789,7 @@
       }
     });
 
-    // Отзывы (модальное окно)
+    // Отзывы (модальное окно) — уходят в Telegram-бота
     const feedbackOverlay = document.getElementById("feedbackOverlay");
     const feedbackOpen = document.getElementById("feedbackOpen");
     const feedbackClose = document.getElementById("feedbackClose");
@@ -803,7 +821,7 @@
       if (feedbackOverlay.hidden) return;
       if (e.key === "Escape") { closeFeedback(); return; }
       if (e.key === "Tab") { // удерживаем фокус внутри окна
-        const items = [...feedbackOverlay.querySelectorAll("button, input:not(.hp), textarea")].filter(el => !el.disabled);
+        const items = [...feedbackOverlay.querySelectorAll("button, a[href], input:not(.hp), textarea")].filter(el => !el.disabled);
         const first = items[0], last = items[items.length - 1];
         if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
         else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
@@ -825,7 +843,7 @@
       feedbackSend.disabled = true;
       feedbackStatus.textContent = "Отправляем отзыв…";
 
-      const r = await sendToOwner("Отзыв с сайта", { "Имя": name, "Отзыв": review });
+      const r = await sendToTelegram(`⭐ Новый отзыв с сайта\n\nИмя: ${name}\n\n${review}`);
 
       feedbackSend.disabled = false;
       if (r.ok) {
