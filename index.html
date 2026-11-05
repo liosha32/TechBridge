@@ -220,6 +220,21 @@
     h2 { margin: 10px 0 12px; font-size: clamp(30px, 4vw, 46px); line-height: 1.15; letter-spacing: -.05em; }
     .section-heading p { margin: 0; color: var(--muted); font-size: 15px; }
 
+
+    .price-note {
+      margin-top: 22px;
+      padding: 26px 28px;
+      border: 1px solid rgba(156,112,255,.28);
+      border-radius: var(--radius);
+      background: linear-gradient(145deg, rgba(156,112,255,.09), rgba(88,166,255,.04));
+    }
+    .price-note h3 { margin: 0 0 14px; font-size: 18px; letter-spacing: -.02em; }
+    .price-note ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; }
+    .price-note li { position: relative; padding-left: 26px; color: #d3d5e0; font-size: 14px; }
+    .price-note li::before { content: "✦"; position: absolute; left: 0; top: 0; color: var(--purple); }
+    .price-note strong { color: white; }
+    @media (max-width: 640px) { .price-note { padding: 20px 18px; } }
+
     .benefit-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
     .benefit-card, .service-card, .step-card, .faq-item {
       border: 1px solid var(--line);
@@ -505,7 +520,7 @@
               <li>Боты для приёма заказов</li><li>Запись клиентов и напоминания</li>
               <li>Боты для онлайн-школ и магазинов</li><li>Оплата и интеграции</li>
             </ul>
-            <div class="price">Цена от <strong>299 $</strong></div>
+            <div class="price">Цена до <strong>299 $</strong></div>
             <a class="button" href="#contact" data-service="Telegram-бот">Заказать Telegram-бота <span>↗</span></a>
           </article>
 
@@ -517,7 +532,7 @@
               <li>Дизайн меню и описание</li><li>Дизайн на ваш вкус</li>
               <li>Карточки товаров и корзина</li><li>Макеты и фирменный стиль</li>
             </ul>
-            <div class="price">Цена от <strong>599 $</strong></div>
+            <div class="price">Цена до <strong>599 $</strong></div>
             <a class="button button-outline" href="#contact" data-service="Дизайн UI">Заказать дизайн <span>↗</span></a>
           </article>
 
@@ -529,9 +544,19 @@
               <li>Новые функции и правки</li><li>Исправление ошибок</li>
               <li>Техническая поддержка</li><li>Интеграции и обновления</li>
             </ul>
-            <div class="price">Цена от <strong>25 $</strong> / час</div>
+            <div class="price">Цена до <strong>25 $</strong> / час</div>
             <a class="button button-outline" href="#contact" data-service="Доработка и поддержка">Обсудить доработку <span>↗</span></a>
           </article>
+        </div>
+
+        <div class="price-note reveal">
+          <h3>Как формируется цена</h3>
+          <ul>
+            <li><strong>Цена зависит от сложности задачи.</strong> Минимальная стоимость — от 5 $, а для совсем небольших задач может быть и ниже.</li>
+            <li><strong>Как это работает:</strong> вы пишете нам свой бюджет и подробно описываете, что нужно получить в итоге. Мы вместе обсуждаем все нюансы и только потом начинаем работу.</li>
+            <li><strong>Небольшие работы</strong>, например простой Telegram-бот для объявлений, считаются мелкими. Мы делаем их быстро, и в зависимости от затраченного времени стоимость может стать ещё меньше.</li>
+            <li><strong>Цены на сайте — почти максимальные.</strong> Это значит, что обычно вы платите не больше указанной суммы. Но если работа заняла больше двух недель, цена увеличивается на <strong>2 $ за каждый лишний день</strong>.</li>
+          </ul>
         </div>
       </div>
     </section>
@@ -643,26 +668,6 @@
   <script>
     const OWNER_EMAIL = "Lexapolonevich98@gmail.com";
 
-    // Telegram-бот для получения отзывов
-    const TG_TOKEN = "8989289234:AAGAe6zQAMiq9JU0ijjbSK3VfdFFaEJF6cM";
-    const TG_CHAT_ID = "ВСТАВЬТЕ_СВОЙ_CHAT_ID"; // числовой ID из getUpdates
-
-    // Отправка сообщения в Telegram-бота. Возвращает { ok, msg? }.
-    async function sendToTelegram(text) {
-      try {
-        const res = await fetch(`https://api.telegram.org/bot${TG_TOKEN}/sendMessage`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ chat_id: TG_CHAT_ID, text })
-        });
-        const json = await res.json().catch(() => ({}));
-        if (res.ok && json.ok) return { ok: true };
-        return { ok: false, msg: json.description || ("Ошибка " + res.status + ".") };
-      } catch (err) {
-        return { ok: false, msg: "Нет соединения. Проверьте интернет." };
-      }
-    }
-
     // Отправка письма на почту владельца (сервис FormSubmit) — используется для заявок.
     // Возвращает { ok, uncertain?, msg? }.
     async function sendToOwner(subject, fields) {
@@ -677,35 +682,7 @@
         if (res.ok && (json.success === true || json.success === "true")) return { ok: true };
         return { ok: false, msg: json.message || ("Сервис вернул ошибку " + res.status + ".") };
       } catch (err) {
-        // Запрос заблокирован браузером — пробуем обычную отправку формы в скрытый iframe
-        try {
-          let frame = document.getElementById("fsFrame");
-          if (!frame) {
-            frame = document.createElement("iframe");
-            frame.name = frame.id = "fsFrame";
-            frame.title = "Отправка формы";
-            frame.hidden = true;
-            document.body.appendChild(frame);
-          }
-          const form = document.createElement("form");
-          form.method = "POST";
-          form.action = "https://formsubmit.co/" + OWNER_EMAIL;
-          form.target = "fsFrame";
-          form.hidden = true;
-          Object.entries(payload).forEach(([name, value]) => {
-            const input = document.createElement("input");
-            input.type = "hidden";
-            input.name = name;
-            input.value = value;
-            form.appendChild(input);
-          });
-          document.body.appendChild(form);
-          form.submit();
-          form.remove();
-          return { ok: true, uncertain: true };
-        } catch (err2) {
-          return { ok: false, msg: "Нет соединения. Проверьте интернет и откройте сайт по адресу https://, а не как файл." };
-        }
+        return { ok: false, msg: "Нет соединения или сайт открыт как файл. Откройте сайт по адресу https:// (через хостинг), а не двойным кликом по файлу." };
       }
     }
 
@@ -789,7 +766,7 @@
       }
     });
 
-    // Отзывы (модальное окно) — уходят в Telegram-бота
+    // Отзывы (модальное окно) — уходят на почту
     const feedbackOverlay = document.getElementById("feedbackOverlay");
     const feedbackOpen = document.getElementById("feedbackOpen");
     const feedbackClose = document.getElementById("feedbackClose");
@@ -843,12 +820,8 @@
       feedbackSend.disabled = true;
       feedbackStatus.textContent = "Отправляем отзыв…";
 
-      // Отправляем одновременно в Telegram и на почту
-      const [tg, mail] = await Promise.all([
-        sendToTelegram(`⭐ Новый отзыв с сайта\n\nИмя: ${name}\n\n${review}`),
-        sendToOwner("Отзыв с сайта", { "Имя": name, "Отзыв": review })
-      ]);
-      const r = (tg.ok || mail.ok) ? { ok: true } : { ok: false, msg: tg.msg || mail.msg };
+      // Отзыв уходит на почту владельца
+      const r = await sendToOwner("Отзыв с сайта", { "Имя": name, "Отзыв": review });
 
       feedbackSend.disabled = false;
       if (r.ok) {
