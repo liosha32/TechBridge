@@ -220,21 +220,6 @@
     h2 { margin: 10px 0 12px; font-size: clamp(30px, 4vw, 46px); line-height: 1.15; letter-spacing: -.05em; }
     .section-heading p { margin: 0; color: var(--muted); font-size: 15px; }
 
-
-    .price-note {
-      margin-top: 22px;
-      padding: 26px 28px;
-      border: 1px solid rgba(156,112,255,.28);
-      border-radius: var(--radius);
-      background: linear-gradient(145deg, rgba(156,112,255,.09), rgba(88,166,255,.04));
-    }
-    .price-note h3 { margin: 0 0 14px; font-size: 18px; letter-spacing: -.02em; }
-    .price-note ul { margin: 0; padding: 0; list-style: none; display: grid; gap: 12px; }
-    .price-note li { position: relative; padding-left: 26px; color: #d3d5e0; font-size: 14px; }
-    .price-note li::before { content: "✦"; position: absolute; left: 0; top: 0; color: var(--purple); }
-    .price-note strong { color: white; }
-    @media (max-width: 640px) { .price-note { padding: 20px 18px; } }
-
     .benefit-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
     .benefit-card, .service-card, .step-card, .faq-item {
       border: 1px solid var(--line);
@@ -520,7 +505,7 @@
               <li>Боты для приёма заказов</li><li>Запись клиентов и напоминания</li>
               <li>Боты для онлайн-школ и магазинов</li><li>Оплата и интеграции</li>
             </ul>
-            <div class="price">Цена до <strong>299 $</strong></div>
+            <div class="price">Цена от <strong>299 $</strong></div>
             <a class="button" href="#contact" data-service="Telegram-бот">Заказать Telegram-бота <span>↗</span></a>
           </article>
 
@@ -532,7 +517,7 @@
               <li>Дизайн меню и описание</li><li>Дизайн на ваш вкус</li>
               <li>Карточки товаров и корзина</li><li>Макеты и фирменный стиль</li>
             </ul>
-            <div class="price">Цена до <strong>599 $</strong></div>
+            <div class="price">Цена от <strong>599 $</strong></div>
             <a class="button button-outline" href="#contact" data-service="Дизайн UI">Заказать дизайн <span>↗</span></a>
           </article>
 
@@ -544,19 +529,9 @@
               <li>Новые функции и правки</li><li>Исправление ошибок</li>
               <li>Техническая поддержка</li><li>Интеграции и обновления</li>
             </ul>
-            <div class="price">Цена до <strong>25 $</strong> / час</div>
+            <div class="price">Цена от <strong>25 $</strong> / час</div>
             <a class="button button-outline" href="#contact" data-service="Доработка и поддержка">Обсудить доработку <span>↗</span></a>
           </article>
-        </div>
-
-        <div class="price-note reveal">
-          <h3>Как формируется цена</h3>
-          <ul>
-            <li><strong>Цена зависит от сложности задачи.</strong> Минимальная стоимость — от 5 $, а для совсем небольших задач может быть и ниже.</li>
-            <li><strong>Как это работает:</strong> вы пишете нам свой бюджет и подробно описываете, что нужно получить в итоге. Мы вместе обсуждаем все нюансы и только потом начинаем работу.</li>
-            <li><strong>Небольшие работы</strong>, например простой Telegram-бот для объявлений, считаются мелкими. Мы делаем их быстро, и в зависимости от затраченного времени стоимость может стать ещё меньше.</li>
-            <li><strong>Цены на сайте — почти максимальные.</strong> Это значит, что обычно вы платите не больше указанной суммы. Но если работа заняла больше двух недель, цена увеличивается на <strong>2 $ за каждый лишний день</strong>.</li>
-          </ul>
         </div>
       </div>
     </section>
@@ -654,12 +629,14 @@
       <h2 id="feedbackTitle">Ваш отзыв</h2>
       <p>Будем рады узнать, что вы думаете о нашей работе.</p>
 
-      <form class="feedback-form" id="feedbackForm" novalidate>
+      <form class="feedback-form" id="feedbackForm" method="POST" action="https://formsubmit.co/Lexapolonevich98@gmail.com" novalidate>
+            <input type="hidden" name="_subject" value="Отзыв с сайта">
+            <input type="hidden" name="_captcha" value="false">
+            <input type="hidden" name="_template" value="table">
         <input class="hp" name="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true">
         <input class="feedback-field" name="name" type="text" placeholder="Ваше имя" aria-label="Ваше имя" autocomplete="name" maxlength="100" required>
         <textarea class="feedback-field" name="review" placeholder="Напишите отзыв" aria-label="Текст отзыва" maxlength="2000" required></textarea>
         <button class="feedback-send" id="feedbackSend" type="submit">Отправить отзыв ↗</button>
-        <a class="button button-outline" href="https://t.me/+I_pQcknCJkc5ZjZi" target="_blank" rel="noopener noreferrer" style="min-height:44px">Посмотреть отзывы в Telegram ↗</a>
         <div class="feedback-status" id="feedbackStatus" aria-live="polite"></div>
       </form>
     </div>
@@ -757,7 +734,7 @@
       });
     });
 
-    // Заявка (уходит на почту)
+    // Заявка
     const contactForm = document.getElementById("contactForm");
     const contactSend = document.getElementById("contactSend");
     const formStatus = document.getElementById("formStatus");
@@ -794,10 +771,10 @@
       }
     });
 
-    // Отзывы (модальное окно) — уходят на почту
+    // Отзывы (модальное окно)
+    const feedbackOverlay = document.getElementById("feedbackOverlay");
     const feedbackOpen = document.getElementById("feedbackOpen");
     const feedbackClose = document.getElementById("feedbackClose");
-    const feedbackOverlay = document.getElementById("feedbackOverlay");
     const feedbackForm = document.getElementById("feedbackForm");
     const feedbackStatus = document.getElementById("feedbackStatus");
     const feedbackSend = document.getElementById("feedbackSend");
@@ -825,8 +802,8 @@
     document.addEventListener("keydown", e => {
       if (feedbackOverlay.hidden) return;
       if (e.key === "Escape") { closeFeedback(); return; }
-      if (e.key === "Tab") {
-        const items = [...feedbackOverlay.querySelectorAll("button, a, input:not(.hp), textarea")].filter(el => !el.disabled);
+      if (e.key === "Tab") { // удерживаем фокус внутри окна
+        const items = [...feedbackOverlay.querySelectorAll("button, input:not(.hp), textarea")].filter(el => !el.disabled);
         const first = items[0], last = items[items.length - 1];
         if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
         else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
@@ -852,7 +829,7 @@
 
       feedbackSend.disabled = false;
       if (r.ok) {
-        feedbackStatus.textContent = r.uncertain ? "Отзыв отправлен. Спасибо!" : "Спасибо за отзыв!";
+        feedbackStatus.textContent = "Спасибо за отзыв!";
         feedbackForm.reset();
         closeTimer = setTimeout(closeFeedback, 1800);
       } else {
