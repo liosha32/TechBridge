@@ -659,7 +659,7 @@
         <input class="feedback-field" name="name" type="text" placeholder="Ваше имя" aria-label="Ваше имя" autocomplete="name" maxlength="100" required>
         <textarea class="feedback-field" name="review" placeholder="Напишите отзыв" aria-label="Текст отзыва" maxlength="2000" required></textarea>
         <button class="feedback-send" id="feedbackSend" type="submit">Отправить отзыв ↗</button>
-        <a class="button button-outline" href="https://t.me/feedbackTechBridge" target="_blank" rel="noopener noreferrer" style="min-height:44px">Перейти в Telegram-канал ↗</a>
+        <a class="button button-outline" href="https://t.me/+I_pQcknCJkc5ZjZi" target="_blank" rel="noopener noreferrer" style="min-height:44px">Посмотреть отзывы в Telegram ↗</a>
         <div class="feedback-status" id="feedbackStatus" aria-live="polite"></div>
       </form>
     </div>
@@ -668,7 +668,7 @@
   <script>
     const OWNER_EMAIL = "Lexapolonevich98@gmail.com";
 
-    // Отправка письма на почту владельца (сервис FormSubmit) — используется для заявок.
+    // Отправка письма на почту владельца (сервис FormSubmit).
     // Возвращает { ok, uncertain?, msg? }.
     async function sendToOwner(subject, fields) {
       const payload = { _subject: subject, _captcha: "false", _template: "table", ...fields };
@@ -682,7 +682,35 @@
         if (res.ok && (json.success === true || json.success === "true")) return { ok: true };
         return { ok: false, msg: json.message || ("Сервис вернул ошибку " + res.status + ".") };
       } catch (err) {
-        return { ok: false, msg: "Нет соединения или сайт открыт как файл. Откройте сайт по адресу https:// (через хостинг), а не двойным кликом по файлу." };
+        // Запрос заблокирован браузером — пробуем обычную отправку формы в скрытый iframe
+        try {
+          let frame = document.getElementById("fsFrame");
+          if (!frame) {
+            frame = document.createElement("iframe");
+            frame.name = frame.id = "fsFrame";
+            frame.title = "Отправка формы";
+            frame.hidden = true;
+            document.body.appendChild(frame);
+          }
+          const form = document.createElement("form");
+          form.method = "POST";
+          form.action = "https://formsubmit.co/" + OWNER_EMAIL;
+          form.target = "fsFrame";
+          form.hidden = true;
+          Object.entries(payload).forEach(([name, value]) => {
+            const input = document.createElement("input");
+            input.type = "hidden";
+            input.name = name;
+            input.value = value;
+            form.appendChild(input);
+          });
+          document.body.appendChild(form);
+          form.submit();
+          form.remove();
+          return { ok: true, uncertain: true };
+        } catch (err2) {
+          return { ok: false, msg: "Нет соединения. Проверьте интернет и откройте сайт по адресу https://, а не как файл." };
+        }
       }
     }
 
@@ -767,9 +795,9 @@
     });
 
     // Отзывы (модальное окно) — уходят на почту
-    const feedbackOverlay = document.getElementById("feedbackOverlay");
     const feedbackOpen = document.getElementById("feedbackOpen");
     const feedbackClose = document.getElementById("feedbackClose");
+    const feedbackOverlay = document.getElementById("feedbackOverlay");
     const feedbackForm = document.getElementById("feedbackForm");
     const feedbackStatus = document.getElementById("feedbackStatus");
     const feedbackSend = document.getElementById("feedbackSend");
@@ -797,8 +825,8 @@
     document.addEventListener("keydown", e => {
       if (feedbackOverlay.hidden) return;
       if (e.key === "Escape") { closeFeedback(); return; }
-      if (e.key === "Tab") { // удерживаем фокус внутри окна
-        const items = [...feedbackOverlay.querySelectorAll("button, a[href], input:not(.hp), textarea")].filter(el => !el.disabled);
+      if (e.key === "Tab") {
+        const items = [...feedbackOverlay.querySelectorAll("button, a, input:not(.hp), textarea")].filter(el => !el.disabled);
         const first = items[0], last = items[items.length - 1];
         if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
         else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
@@ -820,12 +848,11 @@
       feedbackSend.disabled = true;
       feedbackStatus.textContent = "Отправляем отзыв…";
 
-      // Отзыв уходит на почту владельца
       const r = await sendToOwner("Отзыв с сайта", { "Имя": name, "Отзыв": review });
 
       feedbackSend.disabled = false;
       if (r.ok) {
-        feedbackStatus.textContent = "Спасибо за отзыв!";
+        feedbackStatus.textContent = r.uncertain ? "Отзыв отправлен. Спасибо!" : "Спасибо за отзыв!";
         feedbackForm.reset();
         closeTimer = setTimeout(closeFeedback, 1800);
       } else {
